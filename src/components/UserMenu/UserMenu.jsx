@@ -15,7 +15,9 @@ export default function UserMenu() {
         className={css.logOutBtn}
         type="button"
         onClick={() => dispatch(logOut())}
-      ></button>
+      >
+        Log out
+      </button>
     </div>
   );
 }

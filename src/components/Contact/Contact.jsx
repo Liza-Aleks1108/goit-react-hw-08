@@ -5,7 +5,6 @@ import { deleteContact } from "../../redux/contacts/operations";
 import toast, { Toaster } from "react-hot-toast";
 import { FaTrashCan } from "react-icons/fa6";
 import { useState } from "react";
-import ModalWindow from "../Modal/Modal";
 import ContactEditor from "../Modal/Modal";
 
 export default function Contact({ item }) {

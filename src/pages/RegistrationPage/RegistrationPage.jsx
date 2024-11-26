@@ -4,10 +4,10 @@ import { Toaster } from "react-hot-toast";
 
 export default function RegistrationPage() {
   return (
-    <>
-      <h2>Create new account right now</h2>
+    <div className={css.pageContainer}>
+      <h2 className={css.heading}>Create new account right now</h2>
       <RegistrationForm />
-      <Toaster />
-    </>
+      <Toaster className={css.toaster} />
+    </div>
   );
 }

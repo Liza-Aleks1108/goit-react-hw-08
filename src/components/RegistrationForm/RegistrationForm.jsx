@@ -1,66 +1,53 @@
-import { ErrorMessage, Field, Form, Formik } from "formik";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
+import { useDispatch } from "react-redux";
+import { register } from "../../redux/auth/operations";
+import css from "./RegistrationForm.module.css"; // Імпорт стилів
 
-const validationSchema = Yup.object().shape({
+const validationSchema = Yup.object({
   name: Yup.string()
-    .required("This field is required to fill!")
     .min(3, "Must be at least 3 characters long")
-    .max(50, "Must be not longer than 50 characters"),
-  email: Yup.string().email("Enter valid email address").required("Required"),
+    .max(50, "Must be not longer than 50 characters")
+    .required("Name is required"),
+  email: Yup.string()
+    .email("Enter a valid email address")
+    .required("Email is required"),
   password: Yup.string()
-    .required("This field is required to fill!")
-    .min(8, "Must be at least 8 characters long"),
+    .min(8, "Password must be at least 8 characters long")
+    .required("Password is required"),
 });
 
 export default function RegistrationForm() {
   const dispatch = useDispatch();
 
-  const nameFieldId = useId();
-  const emailFieldId = useId();
-  const passwordFieldId = useId();
+  const handleSubmit = (values, { resetForm }) => {
+    dispatch(register(values))
+      .unwrap()
+      .then(() => alert("User registered successfully"))
+      .catch((err) => alert("Registration failed: " + err.message));
+    resetForm();
+  };
+
   return (
     <Formik
-      initialValues={{
-        name: "",
-        email: "",
-        password: "",
-      }}
+      initialValues={{ name: "", email: "", password: "" }}
       validationSchema={validationSchema}
-      onSubmit={(values, actions) => {
-        dispatch(
-          register({
-            name: values.name,
-            email: values.email,
-            password: values.password,
-          })
-        )
-          .unwrap()
-          .then(() => {
-            toast.success("Account registered!");
-          })
-          .catch((error) => {
-            toast.error(
-              error === 400
-                ? "This email has already been taken"
-                : "OOPS! Something went wrong! Please, try again later!"
-            );
-          });
-        actions.resetForm();
-      }}
+      onSubmit={handleSubmit}
     >
       <Form className={css.form}>
-        <label htmlFor={nameFieldId}>Name</label>
-        <Field name="name" type="text" id={nameFieldId} />
-        <ErrorMessage className={css.error} name="name" component="span" />
+        <label htmlFor="name">Name</label>
+        <Field name="name" type="text" className={css.input} />
+        <ErrorMessage name="name" component="div" className={css.error} />
 
-        <label htmlFor={emailFieldId}>Email</label>
-        <Field name="email" type="email" id={emailFieldId} />
-        <ErrorMessage className={css.error} name="email" component="span" />
+        <label htmlFor="email">Email</label>
+        <Field name="email" type="email" className={css.input} />
+        <ErrorMessage name="email" component="div" className={css.error} />
 
-        <label htmlFor={passwordFieldId}>Password</label>
-        <Field name="password" type="password" id={passwordFieldId} />
-        <ErrorMessage className={css.error} name="password" component="span" />
+        <label htmlFor="password">Password</label>
+        <Field name="password" type="password" className={css.input} />
+        <ErrorMessage name="password" component="div" className={css.error} />
 
-        <button className={css.btn} type="submit">
+        <button type="submit" className={css.button}>
           Register
         </button>
       </Form>

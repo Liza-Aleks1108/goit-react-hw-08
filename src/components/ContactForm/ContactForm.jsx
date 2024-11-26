@@ -1,11 +1,10 @@
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Formik, Form, Field, ErrorMessage } from "formik";
+import toast, { Toaster } from "react-hot-toast";
 import { useId } from "react";
 import * as Yup from "yup";
 import css from "./ContactForm.module.css";
 import { addContact } from "../../redux/contacts/operations";
-import toast, { Toaster } from "react-hot-toast";
-import PhoneInputField from "../PhoneInput/PhoneInput";
 
 const validationSchema = Yup.object().shape({
   name: Yup.string()
@@ -14,12 +13,14 @@ const validationSchema = Yup.object().shape({
     .max(50, "Must be not longer than 50 characters"),
   number: Yup.string()
     .required("This field is required to fill!")
-    .min(3, "must be at least 3 characters long")
-    .max(50, "must be not longer than 50 characters"),
+    .matches(/^\+?[0-9\s\-]+$/, "Invalid phone number format")
+    .min(3, "Must be at least 3 characters long")
+    .max(50, "Must be not longer than 50 characters"),
 });
 
 export default function ContactForm() {
   const dispatch = useDispatch();
+  const contacts = useSelector((state) => state.contacts.items);
 
   const nameFieldId = useId();
   const numberFieldId = useId();
@@ -34,15 +35,21 @@ export default function ContactForm() {
         }}
         validationSchema={validationSchema}
         onSubmit={(values, actions) => {
-          dispatch(
-            addContact({
-              name: values.name,
-              number: values.number,
-            })
-          )
+          const duplicate = contacts.find(
+            (contact) =>
+              contact.name.toLowerCase() === values.name.toLowerCase() &&
+              contact.number === values.number
+          );
+          if (duplicate) {
+            toast.error("This contact already exists!");
+            actions.resetForm();
+            return;
+          }
+
+          dispatch(addContact({ name: values.name, number: values.number }))
             .unwrap()
             .then(() => {
-              toast.success("Contact successfully added!");
+              toast.success("Contact added!");
             })
             .catch((err) => {
               toast.error(`${err.message}`);
@@ -50,18 +57,13 @@ export default function ContactForm() {
           actions.resetForm();
         }}
       >
-        <Form className={css.form}>
+        <Form className={css.contactForm}>
           <label htmlFor={nameFieldId}>Name</label>
           <Field name="name" type="text" id={nameFieldId} />
           <ErrorMessage className={css.error} name="name" component="span" />
 
           <label htmlFor={numberFieldId}>Number</label>
-          <Field
-            name="number"
-            type="text"
-            id={numberFieldId}
-            component={PhoneInputField}
-          />
+          <Field name="number" type="text" id={numberFieldId} />
           <ErrorMessage className={css.error} name="number" component="span" />
 
           <button className={css.btn} type="submit">
